@@ -34,33 +34,57 @@
         placeholder="Type to search a name ..."
       />
     </div>
-    <button id="submit-button" type="button" class="btn btn-primary m-1">Submit your answer</button>
+    <button id="submit-button" type="button" class="btn btn-primary m-1">
+      Submit your answer
+    </button>
     <datalist id="datalistOptions"> </datalist>
     <script>
-        const autoCompleteInput = document.getElementById("auto-complete");
-        const datalist = document.getElementById("datalistOptions");
-        
-        // utility function
-        const cleanDatalist = () => datalist.innerHTML = "";
-        const setDatalistOptions = (options) => {
-            cleanDatalist();
-            for(let option of options) {
-                datalist.innerHTML += `<option value="${option}">${option}</option>\n`
-            }
+      const autoCompleteInput = document.getElementById("auto-complete");
+      const datalist = document.getElementById("datalistOptions");
+      let completionSuggestions = [];
+
+      // utility function
+      const cleanDatalist = () => (datalist.innerHTML = "");
+      const setDatalistOptions = (options) => {
+        cleanDatalist();
+        completionSuggestions = options;
+        for (let option of options) {
+          datalist.innerHTML += `<option value="${option}">${option}</option>\n`;
+        }
+      };
+
+      // Setup listener
+      document
+        .getElementById("submit-button")
+        .addEventListener("click", async () => {
+          console.log("Submit form to backend");
+          await fetch("submit", {
+            method: "POST",
+            body: JSON.stringify({
+              chosen: autoCompleteInput.value,
+              suggestions: completionSuggestions,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          autoCompleteInput.value = "";
+          setDatalistOptions([]);
+        });
+
+      autoCompleteInput.addEventListener("input", async () => {
+        console.log("Value changed");
+        // If we found a value that is in the last suggestions, it means we have chose one of them
+        if (completionSuggestions.includes(autoCompleteInput.value)) {
+          return;
         }
 
-        // Setup listener
-        document.getElementById("submit-button").addEventListener("click", () => {
-            console.log("Submit form to backend");
-            console.log(autoCompleteInput.value);
-        })
-
-        autoCompleteInput.addEventListener("input", async () => {
-            console.log("Value changed");
-            const results = await fetch("search?" + new URLSearchParams({search: autoCompleteInput.value}))
-            const suggestions = await results.json();
-            setDatalistOptions(suggestions)
-        })
+        const results = await fetch(
+          "search?" + new URLSearchParams({ search: autoCompleteInput.value })
+        );
+        const suggestions = await results.json();
+        setDatalistOptions(suggestions);
+      });
     </script>
   </body>
 </html>
