@@ -14,7 +14,7 @@ if not database_exist:
     with open("database/initial_values.txt") as initial_values:
         names = initial_values.readlines()
         for name in names:
-            con.execute(f"INSERT INTO knowledge_base(name, trust_level) VALUES ('{name}', 0.5)")
+            con.execute(f"INSERT INTO knowledge_base(name, trust_level) VALUES ('{name.capitalize()}', 0.5)")
         
         con.commit()
 
