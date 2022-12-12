@@ -55,9 +55,11 @@
             console.log(autoCompleteInput.value);
         })
 
-        autoCompleteInput.addEventListener("input", () => {
+        autoCompleteInput.addEventListener("input", async () => {
             console.log("Value changed");
-            console.log(autoCompleteInput.value);
+            const results = await fetch("search?" + new URLSearchParams({search: autoCompleteInput.value}))
+            const suggestions = await results.json();
+            setDatalistOptions(suggestions)
         })
     </script>
   </body>
