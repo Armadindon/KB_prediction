@@ -23,7 +23,9 @@ def search():
 def submit():
     print("Value submitted")
     submitted = request.get_json(force=True)
-    print(submitted)
+
+    utils.update_database(submitted["chosen"], submitted['suggestions'])
+
     return jsonify({"status": "Ok"})
 
 
