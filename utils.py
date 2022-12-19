@@ -4,6 +4,8 @@ import sqlite3
 # GLOBAL VARIABLE
 pk_threshold = 0.5
 pk_min = 0.2
+pk_new_increasing = 0.1
+pk_new_decreasing = 0.2
 
 database_exist = exists("database/data.db")
 conn = sqlite3.connect("database/data.db")
@@ -58,22 +60,20 @@ def update_database(chosen, names_to_update):
     cursor.execute(f"SELECT * FROM knowledge_base WHERE name = '{chosen.upper()}';")
     result = cursor.fetchall()
 
-    pk_new = pk_threshold
     # Add the name
     if len(result) == 0:
         add_name(chosen)
     # Update the name
     else:
         names_to_update.remove(chosen)
-        pk_new = result[0][2]
         # If i understood well, pk_new is the same as pk_old in the formula since we have chosen this entry
-        pk_bis = result[0][2] + (1-result[0][2]) * pk_new
+        pk_bis = result[0][2] + (1-result[0][2]) * pk_new_increasing
         cursor.execute(f"UPDATE knowledge_base SET trust_level = {pk_bis} WHERE id = {result[0][0]};")
     
     
     # Update all names
     names_to_update = [f"'{name}'".upper() for name in names_to_update]
-    cursor.execute(f"UPDATE knowledge_base SET trust_level = trust_level - (1 - trust_level) * {pk_new} WHERE name in ({','.join(names_to_update)});")
+    cursor.execute(f"UPDATE knowledge_base SET trust_level = trust_level - (1 - trust_level) * {pk_new_decreasing} WHERE name in ({','.join(names_to_update)});")
     
     # clean database
     cursor.execute(f"DELETE FROM knowledge_base WHERE trust_level < {pk_min};")
